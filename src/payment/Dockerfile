@@ -1,26 +1,19 @@
-# Copyright The OpenTelemetry Authors
-# SPDX-License-Identifier: Apache-2.0
+#Docker file for payment app
 
-
-FROM node:22-alpine AS build
-
-WORKDIR /usr/src/app/
-
+FROM node:20-alpine AS build
+WORKDIR /app/   
 COPY ./src/payment/package*.json ./
-
 RUN apk add --no-cache python3 make g++ && npm ci --omit=dev
 
-# -----------------------------------------------------------------------------
-
-FROM node:22-alpine
-
+##----------------
+FROM node:20-alpine 
 USER node
-WORKDIR /usr/src/app/
-ENV NODE_ENV=production
+WORKDIR /app/
 
-COPY --chown=node:node --from=build /usr/src/app/node_modules/ ./node_modules/
+COPY NODE_ENV=production
+COPY --chown=node:node --from=build /app/node_modules/ ./node_modules/
 COPY ./src/payment/ ./
 COPY ./pb/demo.proto ./
 
-EXPOSE ${PAYMENT_PORT}
-ENTRYPOINT [ "npm", "run", "start" ]
+EXPOSE 50051
+ENTRYPOINT ["npm","run","start"]
